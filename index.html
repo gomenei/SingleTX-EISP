@@ -1,0 +1,343 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="ELECTROMAGNETIC INVERSE SCATTERING FROM A
+SINGLE TRANSMITTER">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="keywords" content="Your, Keywords, Here">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Electromagnetic Inverse Scattering from a Single Transmitter</title>
+  
+  <!-- CSS imports -->
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+  <script src="./static/js/video_comparison.js"></script>
+  
+  <!-- Custom CSS -->
+  <style>
+    .publication-title {
+      margin-bottom: 0.5em;
+    }
+    .publication-authors {
+      margin-bottom: 1em;
+    }
+    .hero.is-light {
+      background-color: #f5f5f5;
+    }
+    .external-link {
+      margin-right: 0.5em;
+    }
+    .has-bg-img {
+      background: url('your-background-image.jpg') center center;
+      background-size: cover;
+    }
+  </style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Electromagnetic Inverse Scattering from a Single Transmitter<br>
+            <!-- <small>
+              <span style="font-size: 60%;">arxiv 2025</span>
+            </small> -->
+          </h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+                <a href="https://github.com/gomenei" target="_blank">Yizhe Cheng</a><sup>*</sup>,
+            </span>
+            <span class="author-block">
+                <a href="https://github.com/ChunxunTian" target="_blank">Chunxun Tian</a><sup>*</sup>,
+            </span>
+            <span class="author-block">
+                <a href="https://ou524u.github.io/" target="_blank">Haoru Wang</a>,
+            </span>
+            <span class="author-block">
+                <a href="https://wentao.live/about.html" target="_blank">Wentao Zhu</a>,
+            </span>
+            <span class="author-block">
+                <a href="https://shirleymaxx.github.io/" target="_blank">Xiaoxuan Ma</a>,
+            </span>
+            <span class="author-block">
+                <a href="https://cfcs.pku.edu.cn/english/people/faculty/yizhouwang/index.htm" target="_blank">Yizhou Wang</a>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"> Peking University </span><br>
+            <!-- <span class="author-block"><sup>2</sup> Collaborator 1 Institution</span><br> -->
+            <span class="author-block"><sup>*</sup> Equal contribution, random order</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link -->
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2506.21349v4" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <!-- Code Link -->
+              <span class="link-block">
+                <a href="https://github.com/gomenei/SingleTx-EISP" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                </a>
+              </span>
+              <!-- Video Link -->
+              <span class="link-block">
+                <a href="https://youtu.be/jZI5PpcOzqk" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fas fa-play-circle"></i>
+                  </span>
+                  <span>Video</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Teaser Figure -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <div class="content has-text-justified">
+          <p class="is-size-5 has-text-weight-semibold" style="display: inline;">TL;DR:</p>
+          <p style="display: inline;">
+          We propose a fully end-to-end, data-driven framework for Electromagnetic Inverse Scattering Problem. 
+          It uses data priors to overcome the information scarcity inherent in sparse transmitter setups. 
+          Our method thereby achieves robust performance even with a single transmitter and enables real-time inference with over 
+          $70,000\times$ speed up.
+        </p>
+        </div>
+        <div style="text-align: center;">
+          <img src="assets/teaser_v2.png" alt="Teaser Figure" width="100%">
+        </div>
+      </div>
+    </div>
+    <!--/ Teaser Figure -->
+
+    <!-- Abstract -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+         <p>
+          Solving Electromagnetic Inverse Scattering Problems (EISP) is fundamental in applications such as medical imaging, 
+          where the goal is to reconstruct the relative permittivity from scattered electromagnetic field. This inverse process 
+          is inherently ill-posed and highly nonlinear, making it particularly challenging, especially under sparse transmitter 
+          setups, e.g., with only one transmitter. A recent machine learning-based approach, Img-Interiors, shows promising results 
+          by leveraging continuous implicit functions. However, it requires time-consuming case-specific optimization and fails 
+          under sparse transmitter setups. To address these limitations, we revisit EISP from a data-driven perspective. 
+          The scarcity of transmitters leads to an insufficient amount of measured data, which fails to capture adequate 
+          physical information for stable inversion. Built on this insight, we propose a fully end-to-end and data-driven 
+          framework that predicts the relative permittivity of scatterers from measured fields, leveraging data distribution 
+          priors to compensate for the lack of physical information. This design enables data-driven training and feed-forward 
+          prediction of relative permittivity while maintaining strong robustness to transmitter sparsity. Extensive experiments 
+          show that our method outperforms state-of-the-art approaches in reconstruction accuracy and robustness. Notably, 
+          it achieves high-quality results even with a single transmitter, a setting where previous methods consistently fail. 
+          This work offers a fundamentally new perspective on electromagnetic inverse scattering and represents a major step toward 
+          cost-effective practical solutions for electromagnetic imaging.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract -->
+    
+    <!-- Video/Overview -->
+    <div class="column is-centered has-text-centered">
+      <h2 class="title is-3">Video Overview</h2>
+    </div>
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <!-- Video Embed -->
+        <div class="publication-video">
+          <iframe width="100%" height="400" 
+          src="https://www.youtube.com/embed/HaSAXk7yOPE"  
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen>
+          </iframe>
+      </div>
+      </div>
+    </div>
+    <!--/ Video Overview -->
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Method Overview -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Method Overview</h2>
+        <!-- Method Figure -->
+        <div style="text-align: center;">
+          <img src="assets/pipeline.png" alt="Method Figure" width="100%">
+        </div>
+        <div class="content has-text-justified">
+          <p>
+            <strong>Overview of our method.</strong> Our pipeline is built around an MLP that serves as the inverse solver. 
+            Given the scattered field measurements $\mathbf{E}^\text{s}\xspace$ from all transmitters and receivers, along with a spatial query $\x$, 
+            the MLP directly predicts thee relative permittivity $\hat{\boldsymbol{\epsilon}_r}(\x)$. To enhance spatial expressiveness, we apply positional 
+            encoding $\gamma(\x)$ to the query position. During training, dashed lines indicate the supervision signals applied.
+          </p>
+        </div>
+
+      </div>
+    </div>
+    <!--/ Method Overview -->
+
+    <!-- Results -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Results</h2>
+
+        <!-- Single-Transmitter Qualitative -->
+        <div class="content has-text-justified" style="margin-bottom: 2rem;">
+          <p style="font-weight: bold;">
+            Qualitative comparison under the <span style="font-style: italic;">single-transmitter</span> setting:
+          </p>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 4rem;">
+          <img src="assets/synthetic_0.05noise_N_inc=1.jpg" alt="Qualitative Results (Single-Transmitter)" width="100%">
+        </div>
+
+        <!-- Multiple-Transmitter Qualitative -->
+        <div class="content has-text-justified" style="margin-bottom: 2rem;">
+          <p style="font-weight: bold;">
+            Qualitative comparison under the <span style="font-style: italic;">multiple-transmitter</span> setting:
+          </p>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 4rem;">
+          <img src="assets/synthetic_0.05noise_N_inc=16.jpg" alt="Quantitative Results (Multi-Transmitter)" width="100%">
+        </div>
+
+        <!-- 3D Single-Transmitter -->
+        <div class="content has-text-justified" style="margin-bottom: 2rem;">
+          <p style="font-weight: bold;">
+            Qualitative comparison under the <span style="font-style: italic;">single-transmitter</span> setting for 3D reconstruction on 3D MNIST dataset:
+          </p>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 4rem;">
+          <img src="assets/3D_fig.png" alt="3D Reconstruction (Single-Transmitter)" width="100%">
+        </div>
+
+        <!-- 3D ShapeNet Single-Transmitter -->
+        <div class="content has-text-justified" style="margin-bottom: 2rem;">
+          <p style="font-weight: bold;">
+            Qualitative comparison under the <span style="font-style: italic;">single-transmitter</span> setting for 3D reconstruction on 3D ShapeNet dataset:
+          </p>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 4rem;">
+          <img src="assets/3D_ShapeNet_fig.png" alt="3D Reconstruction (Single-Transmitter)" width="100%">
+        </div>
+      </div>
+    </div>
+
+    <!--/ Results -->
+  </div>
+</section>
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@article{cheng2025generalizableneuralelectromagneticinverse,
+  author    = {Yizhe Cheng and Chunxun Tian and Haoru Wang and Wentao Zhu and Xiaoxuan Ma and Yizhou Wang},
+  title     = {Generalizable Neural Electromagnetic Inverse Scattering},
+  journal   = {arXiv preprint arXiv:2506.21349},
+  year      = {2025},
+}</code></pre>
+  </div>
+</section>
+
+<style>
+  .footer {
+    padding: 1rem 1.5rem;
+    line-height: 1.5;
+  }
+  .footer .content {
+    text-align: center;
+  }
+</style>
+
+<footer class="footer" style="font-size: 0.80rem;">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            The template is inspired by <a href="https://nerfies.github.io" target="_blank">nerfies</a> and other project pages in the field.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- JS imports -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.4/dist/js/bulma-carousel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bulma-slider@2.0.4/dist/js/bulma-slider.min.js"></script>
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+
+<!-- Custom JS -->
+<script>
+  // Initialize any carousels or sliders
+  bulmaCarousel.attach('#results-carousel', {
+    slidesToScroll: 1,
+    slidesToShow: 3,
+    infinite: true,
+    autoplay: true
+  });
+</script>
+
+</body>
+</html>
