@@ -141,7 +141,7 @@ SINGLE TRANSMITTER">
         </p>
         </div>
         <div style="text-align: center;">
-          <img src="assets/teaser_v2.png" alt="Teaser Figure" width="100%">
+          <img src="assets/teaser_v3.jpg" alt="Teaser Figure" width="100%">
         </div>
       </div>
     </div>
@@ -203,14 +203,14 @@ SINGLE TRANSMITTER">
         <h2 class="title is-3">Method Overview</h2>
         <!-- Method Figure -->
         <div style="text-align: center;">
-          <img src="assets/pipeline.png" alt="Method Figure" width="100%">
+          <img src="assets/pipeline.jpg" alt="Method Figure" width="100%">
         </div>
         <div class="content has-text-justified">
           <p>
             <strong>Overview of our method.</strong> Our pipeline is built around an MLP that serves as the inverse solver. 
-            Given the scattered field measurements $\mathbf{E}^\text{s}\xspace$ from all transmitters and receivers, along with a spatial query $\x$, 
-            the MLP directly predicts thee relative permittivity $\hat{\boldsymbol{\epsilon}_r}(\x)$. To enhance spatial expressiveness, we apply positional 
-            encoding $\gamma(\x)$ to the query position. During training, dashed lines indicate the supervision signals applied.
+            Given the scattered field measurements $\mathbf{E}^\text{s}$ from all transmitters and receivers, along with a spatial query $\bf{x}$, 
+            the MLP directly predicts thee relative permittivity $\hat{\boldsymbol{\epsilon}_r}({\bf{x}})$. To enhance spatial expressiveness, we apply positional 
+            encoding $\gamma({\bf{x}})$ to the query position. During training, dashed lines indicate the supervision signals applied.
           </p>
         </div>
 
@@ -253,7 +253,7 @@ SINGLE TRANSMITTER">
         </div>
 
         <div style="text-align: center; margin-bottom: 4rem;">
-          <img src="assets/3D_fig.png" alt="3D Reconstruction (Single-Transmitter)" width="100%">
+          <img src="assets/3D_fig_supp.jpg" alt="3D Reconstruction (Single-Transmitter)" width="100%">
         </div>
 
         <!-- 3D ShapeNet Single-Transmitter -->
@@ -264,7 +264,7 @@ SINGLE TRANSMITTER">
         </div>
 
         <div style="text-align: center; margin-bottom: 4rem;">
-          <img src="assets/3D_ShapeNet_fig.png" alt="3D Reconstruction (Single-Transmitter)" width="100%">
+          <img src="assets/3D_ShapeNet_fig_supp.jpg" alt="3D Reconstruction (Single-Transmitter)" width="100%">
         </div>
       </div>
     </div>
@@ -276,9 +276,9 @@ SINGLE TRANSMITTER">
 <section class="section" id="BibTeX">
   <div class="container is-max-desktop content">
     <h2 class="title">BibTeX</h2>
-    <pre><code>@article{cheng2025generalizableneuralelectromagneticinverse,
+    <pre><code>@article{cheng2025electromagneticinversescatteringsingle,
   author    = {Yizhe Cheng and Chunxun Tian and Haoru Wang and Wentao Zhu and Xiaoxuan Ma and Yizhou Wang},
-  title     = {Generalizable Neural Electromagnetic Inverse Scattering},
+  title     = {Electromagnetic Inverse Scattering from a Single Transmitter},
   journal   = {arXiv preprint arXiv:2506.21349},
   year      = {2025},
 }</code></pre>
