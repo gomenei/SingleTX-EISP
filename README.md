@@ -113,11 +113,11 @@ TODO -->
 If you find this work useful for your research, please consider citing:
 
 ```bibtex
-@article{cheng2025generalizableneuralelectromagneticinverse,
+@article{cheng2026electromagneticinversescatteringsingle,
   author    = {Yizhe Cheng and Chunxun Tian and Haoru Wang and Wentao Zhu and Xiaoxuan Ma and Yizhou Wang},
-  title     = {Generalizable Neural Electromagnetic Inverse Scattering},
-  journal   = {arXiv preprint arXiv:2506.21349},
-  year      = {2025}, 
+  title     = {Electromagnetic Inverse Scattering from a Single Transmitter},
+  journal   = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2026}, 
 }
 ```
 
