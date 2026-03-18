@@ -1,6 +1,6 @@
-# GenEISP: Generalizable Neural Electromagnetic Inverse Scattering
+# Electromagnetic Inverse Scattering from a Single Transmitter
 
-This repository contains the PyTorch implementation of the paper **"GenEISP: Generalizable Neural Electromagnetic Inverse Scattering"**.
+This repository contains the PyTorch implementation of the paper **"Electromagnetic Inverse Scattering from a Single Transmitter"**.
 
 <div>
     <a href="https://gomenei.github.io/SingleTX-EISP/"><strong>🌐 Project Page</strong></a> |
@@ -16,10 +16,7 @@ This repository contains the PyTorch implementation of the paper **"GenEISP: Gen
 
 ## 1. **Introduction**
 <p style="display: inline;">
-  We propose the first generalizable, physics-driven inverse scattering framework,
-  which works in an end-to-end manner and achieves more accurate 
-  reconstructions on unseen cases. It remains robust even with a <em>single</em> 
-  transmitter and achieves real-time inference with over 300,000x speed-up.
+  We propose a fully end-to-end, data-driven framework for Electromagnetic Inverse Scattering Problem. It uses data priors to overcome the information scarcity inherent in sparse transmitter setups. Our method thereby achieves robust performance even with a single transmitter and enables real-time inference with over 70,000x speed up..
 </p>
 <div style="text-align: center;">
     <img src="assets/teaser.png" alt="Teaser Figure" width="100%">
