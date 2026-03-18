@@ -3,7 +3,7 @@
 This repository contains the PyTorch implementation of the paper **"GenEISP: Generalizable Neural Electromagnetic Inverse Scattering"**.
 
 <div>
-    <a href="https://gomenei.github.io/GenEISP/"><strong>🌐 Project Page</strong></a> |
+    <a href="https://gomenei.github.io/SingleTX-EISP/"><strong>🌐 Project Page</strong></a> |
     <a href="https://arxiv.org/abs/2506.21349"><strong>📄 Paper</strong></a> |
     <a href="https://youtu.be/HaSAXk7yOPE"><strong>▶️ Video</strong></a>
 </div>
