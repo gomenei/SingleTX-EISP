@@ -64,29 +64,34 @@ SINGLE TRANSMITTER">
           </h1>
           <div class="is-size-5 publication-authors">
             <span class="author-block">
-                <a href="https://github.com/gomenei" target="_blank">Yizhe Cheng</a><sup>*</sup>,
+                <a href="https://github.com/gomenei" target="_blank">Yizhe Cheng</a><sup>1,*</sup>,
             </span>
             <span class="author-block">
-                <a href="https://github.com/ChunxunTian" target="_blank">Chunxun Tian</a><sup>*</sup>,
+                <a href="https://github.com/ChunxunTian" target="_blank">Chunxun Tian</a><sup>1,*</sup>,
             </span>
             <span class="author-block">
-                <a href="https://ou524u.github.io/" target="_blank">Haoru Wang</a>,
+                <a href="https://ou524u.github.io/" target="_blank">Haoru Wang</a><sup>1,*</sup>,
             </span>
             <span class="author-block">
-                <a href="https://wentao.live/about.html" target="_blank">Wentao Zhu</a>,
+                <a href="https://wentao.live/about.html" target="_blank">Wentao Zhu</a><sup>2</sup>,
             </span>
             <span class="author-block">
-                <a href="https://shirleymaxx.github.io/" target="_blank">Xiaoxuan Ma</a>,
+                <a href="https://shirleymaxx.github.io/" target="_blank">Xiaoxuan Ma</a><sup>1,3&#9993;</sup>,
             </span>
             <span class="author-block">
-                <a href="https://cfcs.pku.edu.cn/english/people/faculty/yizhouwang/index.htm" target="_blank">Yizhou Wang</a>
+                <a href="https://cfcs.pku.edu.cn/english/people/faculty/yizhouwang/index.htm" target="_blank">Yizhou Wang</a><sup>1</sup>
             </span>
           </div>
 
           <div class="is-size-5 publication-authors">
-            <span class="author-block"> Peking University </span><br>
+            <sup>1</sup> Center on Frontiers of Computing Studies,
+            School of Computer Science, Peking University <br>
+            <sup>2</sup> Institute of Digital Twin, Eastern Institute of Technology, Ningbo <br>
+            <sup>3</sup> Robotics Institute, Carnegie Mellon University <br>
+
             <!-- <span class="author-block"><sup>2</sup> Collaborator 1 Institution</span><br> -->
-            <span class="author-block"><sup>*</sup> Equal contribution, random order</span>
+            <span class="author-block"><sup>*</sup> Equal contribution, random order</span>&nbsp;&nbsp;
+            <sup>&#9993;</sup> Corresponding author.
           </div>
 
           <div class="column has-text-centered">
@@ -141,7 +146,7 @@ SINGLE TRANSMITTER">
         </p>
         </div>
         <div style="text-align: center;">
-          <img src="assets/teaser_v3.jpg" alt="Teaser Figure" width="100%">
+          <img src="assets/teaser_v4.jpg" alt="Teaser Figure" width="100%">
         </div>
       </div>
     </div>
@@ -153,21 +158,25 @@ SINGLE TRANSMITTER">
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
          <p>
-          Solving Electromagnetic Inverse Scattering Problems (EISP) is fundamental in applications such as medical imaging, 
-          where the goal is to reconstruct the relative permittivity from scattered electromagnetic field. This inverse process 
-          is inherently ill-posed and highly nonlinear, making it particularly challenging, especially under sparse transmitter 
-          setups, e.g., with only one transmitter. A recent machine learning-based approach, Img-Interiors, shows promising results 
-          by leveraging continuous implicit functions. However, it requires time-consuming case-specific optimization and fails 
-          under sparse transmitter setups. To address these limitations, we revisit EISP from a data-driven perspective. 
-          The scarcity of transmitters leads to an insufficient amount of measured data, which fails to capture adequate 
-          physical information for stable inversion. Built on this insight, we propose a fully end-to-end and data-driven 
-          framework that predicts the relative permittivity of scatterers from measured fields, leveraging data distribution 
-          priors to compensate for the lack of physical information. This design enables data-driven training and feed-forward 
-          prediction of relative permittivity while maintaining strong robustness to transmitter sparsity. Extensive experiments 
-          show that our method outperforms state-of-the-art approaches in reconstruction accuracy and robustness. Notably, 
-          it achieves high-quality results even with a single transmitter, a setting where previous methods consistently fail. 
-          This work offers a fundamentally new perspective on electromagnetic inverse scattering and represents a major step toward 
-          cost-effective practical solutions for electromagnetic imaging.
+          Electromagnetic Inverse Scattering Problems (EISP) seek to reconstruct relative permittivity 
+          from scattered fields and are fundamental to applications like medical imaging.
+          This inverse process is inherently ill-posed and highly nonlinear, making it particularly 
+          challenging, especially under sparse transmitter setups, <em>e.g.</em>, with only one transmitter.
+          While recent machine learning-based approaches have shown promising results, they often rely on 
+          time-consuming, case-specific optimization and perform poorly under sparse transmitter setups.
+          To address these limitations, we revisit EISP from a data-driven perspective. The scarcity of 
+          transmitters leads to an insufficient amount of measured data, which fails to capture adequate 
+          physical information for stable inversion.
+          Accordingly, we propose a <em>fully end-to-end</em> and <em>data-driven</em> framework that predicts 
+          the relative permittivity of scatterers from measured fields, leveraging data distribution priors 
+          to compensate for the incomplete information from sparse measurements.
+          This design enables data-driven training and <em>feed-forward</em> prediction of relative permittivity 
+          while maintaining strong robustness to transmitter sparsity.
+          Extensive experiments show that our method outperforms state-of-the-art approaches in reconstruction 
+          accuracy and robustness.
+          Notably, we demonstrate, for the first time, high-quality reconstruction from a single transmitter.
+          This work advances practical electromagnetic imaging by providing a new, cost-effective paradigm 
+          to inverse scattering.
           </p>
         </div>
       </div>
@@ -209,7 +218,7 @@ SINGLE TRANSMITTER">
           <p>
             <strong>Overview of our method.</strong> Our pipeline is built around an MLP that serves as the inverse solver. 
             Given the scattered field measurements $\mathbf{E}^\text{s}$ from all transmitters and receivers, along with a spatial query $\bf{x}$, 
-            the MLP directly predicts thee relative permittivity $\hat{\boldsymbol{\epsilon}_r}({\bf{x}})$. To enhance spatial expressiveness, we apply positional 
+            the MLP directly predicts the relative permittivity $\hat{\boldsymbol{\epsilon}_r}({\bf{x}})$. To enhance spatial expressiveness, we apply positional 
             encoding $\gamma({\bf{x}})$ to the query position. During training, dashed lines indicate the supervision signals applied.
           </p>
         </div>
