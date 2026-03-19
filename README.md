@@ -4,6 +4,7 @@
 ### (CVPR 2026)
 
 </div>
+
 This repository contains the PyTorch implementation of the paper **"Electromagnetic Inverse Scattering from a Single Transmitter"**.
 
 <div>
