@@ -1,9 +1,6 @@
-<div align="center">
+# Electromagnetic Inverse Scattering from a Single Transmitter
 
-# Electromagnetic Inverse Scattering from a Single Transmitter  
-### (CVPR 2026)
-
-</div>
+**CVPR 2026**
 
 This repository contains the PyTorch implementation of the paper **"Electromagnetic Inverse Scattering from a Single Transmitter"**.
 
