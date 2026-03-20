@@ -9,7 +9,7 @@ This repository contains the PyTorch implementation of the paper **"Electromagne
 <div>
     <a href="https://gomenei.github.io/SingleTX-EISP/"><strong>🌐 Project Page</strong></a> |
     <a href="https://arxiv.org/abs/2506.21349"><strong>📄 Paper</strong></a> |
-    <a href="https://youtu.be/HaSAXk7yOPE"><strong>▶️ Video</strong></a>
+    <a href="https://youtu.be/Rh1y83JXY-s"><strong>▶️ Video</strong></a>
 </div>
 
 ## TODO :
