@@ -1,6 +1,6 @@
 <div align="center">
 
-# Electromagnetic Inverse Scattering from a Single Transmitter (CVPR 2026)
+# Electromagnetic Inverse Scattering from a Single Transmitter (CVPR 2026 Highlight)
 
 </div>
 
