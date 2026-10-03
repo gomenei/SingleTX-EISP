@@ -1,46 +1,32 @@
-DEBUG: false
-advanced:
-  J_epsilon_rate: 0.001
-  TVLoss_weight: 0.0001
-  dimesions: 10
-  grad_clip: true
-  limit_output_range: true
-  max_norm: 0.001
-  output_lower_limit: 1
-  output_upper_limit: 3.2
-  phy_loss_rate: 1.0e-07
-  pos_encoding: true
-  fig_save_interval: 100
-enable_wandb: true
-experiment:
-  baseline: Es_xy_to_J
-  channels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
-  image_input: true
-  loss_terms:
-    J_loss: true
-    TV_loss: false
-    phy_loss: true
-    second_derivative_loss: false
-  supervise: J_epsilon
-  test_noise_ratio: 0
-  train_noise_ratio: 0
-global:
-  experiment_name: FTD
-  fig_path: ./fig/{experiment_name}
-  model_save_path: ./model/{experiment_name}
-  test_dataset_path: ./data/test/IF/FTD_test.pkl
-  train_dataset_path: ./data/IF_train_data_inc18/IF_train_data_10000_ch0_grid224.pkl
-model:
-  D: 8
-  W: 256
-  skips: []
-  epsilon_output: false
-  output_rate: 0.01
-training:
-  BATCH_SIZE: 32
-  LEARNING_RATE: 0.001
-  gamma: 0.9
-  lr_decrease: true
-  num_epochs: 300
-  save_interval: 20
-  step_size: 10
+description: "Paper Table 1: IF FTD, no added noise, 18 transmitter(s), 18-incidence source data."
+train:
+  dataset: "if"
+  target: "epsilon"
+  input_mode: "coordinate"
+  multi_input_mode: "concat"
+  depth: 8
+  width: 512
+  encoding_levels: 80
+  epsilon_channels: 2
+  output_activation: "linear"
+  output_scale: 1
+  measurement_scale: 1
+  batch_size: 32
+  epochs: 200
+  lr: 0.001
+  lr_step: 0
+  epsilon_weight: 100
+  train_noise: 0
+  test_noise: 0
+  noise_mode: "legacy"
+  seed: 42
+  point_chunk: 50176
+  save_every: 20
+  channel: -1
+  train_data: "../data/train/if_inc18"
+  test_data: "../data/test/IF/FTD"
+  output: "../runs/if18_noise00_N18"
+test:
+  checkpoint: "../runs/if18_noise00_N18/last.pt"
+  test_data: "../data/test/IF/FTD"
+  output: "../results/IF_FTD_noise00_N18"

@@ -1,4 +1,4 @@
-description: "Paper Table 1: cylinder, 5% noise, 16 transmitter(s). Shared CYLINDER+MNIST training; train the shared run once."
+description: "Paper Table 1: cylinder, 5% noise, 1 transmitter(s). Shared CYLINDER+MNIST training; train the shared run once."
 train:
   dataset: "cylinder"
   target: "epsilon"
@@ -7,12 +7,12 @@ train:
   depth: 8
   width: 512
   encoding_levels: 10
-  epsilon_channels: 2
+  epsilon_channels: 1
   output_activation: "linear"
   output_scale: 1
   measurement_scale: 1
   batch_size: 32
-  epochs: 300
+  epochs: 200
   lr: 0.001
   lr_step: 0
   epsilon_weight: 100
@@ -22,11 +22,11 @@ train:
   seed: 42
   point_chunk: 131072
   save_every: 20
-  channel: -1
+  channel: 0
   train_data: "../data/train/cylinder_mnist_inc16"
   test_data: "../data/test/cylinder/cylinder_test_inc16"
-  output: "../runs/2d_noise05_N16"
+  output: "../runs/2d_noise05_N1"
 test:
-  checkpoint: "../runs/2d_noise05_N16/last.pt"
+  checkpoint: "../runs/2d_noise05_N1/last.pt"
   test_data: "../data/test/cylinder/cylinder_test_inc16"
-  output: "../results/cylinder_noise05_N16"
+  output: "../results/cylinder_noise05_N1"

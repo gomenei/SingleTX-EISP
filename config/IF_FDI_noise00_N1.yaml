@@ -1,4 +1,4 @@
-description: "Paper Table 1: IF FDI, no added noise, 8 transmitter(s), 8-incidence source data."
+description: "Paper Table 1: IF FDI, no added noise, 1 transmitter(s), 8-incidence source data."
 train:
   dataset: "if"
   target: "epsilon"
@@ -6,8 +6,8 @@ train:
   multi_input_mode: "concat"
   depth: 8
   width: 512
-  encoding_levels: 40
-  epsilon_channels: 2
+  encoding_levels: 10
+  epsilon_channels: 1
   output_activation: "linear"
   output_scale: 1
   measurement_scale: 1
@@ -16,17 +16,17 @@ train:
   lr: 0.001
   lr_step: 0
   epsilon_weight: 100
-  train_noise: 0
+  train_noise: 0.05
   test_noise: 0
   noise_mode: "legacy"
   seed: 42
   point_chunk: 50176
   save_every: 20
-  channel: -1
+  channel: 0
   train_data: "../data/train/if_inc8"
   test_data: "../data/test/IF/FDI"
-  output: "../runs/if8_noise00_N8"
+  output: "../runs/if8_noise00_N1"
 test:
-  checkpoint: "../runs/if8_noise00_N8/last.pt"
+  checkpoint: "../runs/if8_noise00_N1/last.pt"
   test_data: "../data/test/IF/FDI"
-  output: "../results/IF_FDI_noise00_N8"
+  output: "../results/IF_FDI_noise00_N1"

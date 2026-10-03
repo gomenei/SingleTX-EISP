@@ -1,0 +1,33 @@
+description: "Paper Section 5.4 / Figures 8-9: 3DShapeNet, 1 transmitter(s). Uses original 3D Fourier layout for compatibility."
+train:
+  dataset: "3d"
+  target: "epsilon"
+  input_mode: "coordinate"
+  multi_input_mode: "concat"
+  depth: 8
+  width: 512
+  encoding_levels: 10
+  epsilon_channels: 1
+  output_activation: "linear"
+  output_scale: 1
+  measurement_scale: 100000
+  batch_size: 32
+  epochs: 300
+  lr: 0.001
+  lr_step: 0
+  epsilon_weight: 1
+  train_noise: 0.05
+  test_noise: 0.05
+  noise_mode: "legacy"
+  seed: 42
+  point_chunk: 500000
+  save_every: 20
+  channel: 0
+  legacy_3d_encoding: true
+  train_data: "../data/train/3DShapeNet_N1"
+  test_data: "../data/test/3DShapeNet_N1"
+  output: "../runs/3DShapeNet_noise05_N1"
+test:
+  checkpoint: "../runs/3DShapeNet_noise05_N1/last.pt"
+  test_data: "../data/test/3DShapeNet_N1"
+  output: "../results/3DShapeNet_noise05_N1"

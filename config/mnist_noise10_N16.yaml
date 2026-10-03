@@ -1,4 +1,4 @@
-description: "Paper Table 1: mnist, 30% noise, 16 transmitter(s). Shared CYLINDER+MNIST training; train the shared run once."
+description: "Paper Table 2: MNIST noise robustness, 10% noise. 5% and 30% use the Table 1 configurations."
 train:
   dataset: "mnist"
   target: "epsilon"
@@ -16,8 +16,8 @@ train:
   lr: 0.001
   lr_step: 0
   epsilon_weight: 100
-  train_noise: 0.3
-  test_noise: 0.3
+  train_noise: 0.1
+  test_noise: 0.1
   noise_mode: "legacy"
   seed: 42
   point_chunk: 131072
@@ -25,8 +25,8 @@ train:
   channel: -1
   train_data: "../data/train/cylinder_mnist_inc16"
   test_data: "../data/test/mnist/mnist_test_inc16"
-  output: "../runs/2d_noise30_N16"
+  output: "../runs/mnist_noise10_N16"
 test:
-  checkpoint: "../runs/2d_noise30_N16/last.pt"
+  checkpoint: "../runs/mnist_noise10_N16/last.pt"
   test_data: "../data/test/mnist/mnist_test_inc16"
-  output: "../results/mnist_noise30_N16"
+  output: "../results/mnist_noise10_N16"

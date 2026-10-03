@@ -1,4 +1,4 @@
-description: "Paper Table 1: mnist, 30% noise, 16 transmitter(s). Shared CYLINDER+MNIST training; train the shared run once."
+description: "Paper Table 3: 75% training objects, 30% noise, complete MNIST test set. Subset selection is deterministic for the configured seed."
 train:
   dataset: "mnist"
   target: "epsilon"
@@ -12,7 +12,7 @@ train:
   output_scale: 1
   measurement_scale: 1
   batch_size: 32
-  epochs: 300
+  epochs: 200
   lr: 0.001
   lr_step: 0
   epsilon_weight: 100
@@ -23,10 +23,11 @@ train:
   point_chunk: 131072
   save_every: 20
   channel: -1
+  train_fraction: 0.75
   train_data: "../data/train/cylinder_mnist_inc16"
   test_data: "../data/test/mnist/mnist_test_inc16"
-  output: "../runs/2d_noise30_N16"
+  output: "../runs/mnist_noise30_N16_data75"
 test:
-  checkpoint: "../runs/2d_noise30_N16/last.pt"
+  checkpoint: "../runs/mnist_noise30_N16_data75/last.pt"
   test_data: "../data/test/mnist/mnist_test_inc16"
-  output: "../results/mnist_noise30_N16"
+  output: "../results/mnist_noise30_N16_data75"
