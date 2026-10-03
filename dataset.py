@@ -1,335 +1,198 @@
-import os
-import torch
+"""Shared 2D pickle / 3D mmap adapters. No dependency on the original project.
+
+E_s arrays: (objects, receivers, incidences), with a missing incidence axis
+accepted for single-channel files. J: (objects, pixels, incidences[, 3]).
+epsilon_gt and coordinates use NumPy column-major spatial flattening.
+Each sample has measurements, epsilon, incidence indexes and optional current.
+"""
+
+from pathlib import Path
 import pickle
+
 import numpy as np
-from torch.utils.data import Dataset, DataLoader
-from util import (
-    get_coords_and_pixels
-)
+import torch
+from torch.utils.data import Dataset
 
-# ElecDataset
-# you can choose E_s with J or E_s with epsilon
 
-class ElecDataset(Dataset):
-    def __init__(self, root, config, noise_ratio, mode, transform=None):
-        """
-        root: path of the pickle file
-        config: includes these keys:
-                - xy_as_input: bool, whether take (x, y) as the input of the model or not
-                - image_input: bool, whether input the data as image or as points
-                - pos_encoding: bool, whether use positional encoding or not
-                - J_as_label:  bool, whether take J as the output label
-                - epsilon_as_label: bool, whether take epsilon as the output label
-                - dimension: int, the dimension of positional encoding
-        transform: additional transform (not necessarily needed)
-        """
+def as_numpy(value):
+    if isinstance(value, torch.Tensor):
+        return value.detach().cpu().numpy()
+    return np.asarray(value)
 
-        self.baseline = config['experiment']['baseline']
-        self.image_input = config['experiment']['image_input']
-        self.supervise = config['experiment']['supervise']
-        self.channels = config['experiment']['channels']
-        self.pos_encoding = config['advanced']['pos_encoding']
-        self.d = config['advanced']['dimesions']
 
-        super().__init__()
-        # ---------- 1. load data and transform to tensor ----------
-        with open(root, 'rb') as f:
-            data_dict = pickle.load(f)
+def spatial_flatten(array):
+    return np.asarray(array).reshape(-1, order="F")
 
-        # basic parameters
-        self.params = data_dict['params']  # usually some scalars or hyperparameters, not necessarily need to be converted to Tensor
-        self.data = data_dict['data']      # dictionary storing the actual data
-        self.num_groups = self.params['num_groups'] 
-        self.Mx = self.params['Mx']        # the grid size when generating the data
 
-        # transform numpy arrays in data to torch.Tensor
-        # Note: if the data is already Tensor, no need to transform
-        for k, v in self.data.items():
-            if isinstance(v, (list, tuple)):
-                self.data[k] = torch.tensor(v, dtype=torch.float32)
-            elif isinstance(v, (torch.Tensor,)):
-                # already Tensor, no need to transform
-                continue
-            else:
-                # assume v is numpy.ndarray or other types that can be transformed to Tensor
-                self.data[k] = torch.from_numpy(v).float()
-
-        # get J (complex) from its real and imaginary parts
-        if 'J_real' in self.data and 'J_imag' in self.data:
-            self.J = torch.complex(self.data['J_real'], self.data['J_imag'])
-     
-        # the shape of E_s_real and E_s_imag is (num_groups, N_rec, N_inc)
-        E_s_real = self.data['E_s_real']
-        E_s_imag = self.data['E_s_imag']
-
-        # add noise to each image
-        N_rec = self.params['N_rec']
-        N_inc = self.params['N_inc']
-        for i in range(self.num_groups):
-            energe = torch.sqrt(torch.mean((E_s_real[i] ** 2 + E_s_imag[i] ** 2))) * (1 / torch.sqrt(torch.tensor([2])))
-            E_s_real[i] = E_s_real[i] + energe * noise_ratio * np.random.randn(*E_s_real[i].shape)
-            E_s_imag[i] = E_s_imag[i] + energe * noise_ratio * np.random.randn(*E_s_imag[i].shape)
-        
-        E_s_real_imag = torch.cat(
-            (E_s_real, E_s_imag), 
-            dim=1
-        )  # shape: (num_groups, 2*N_rec, N_inc)
-        # reshape epsilon_gt. Since numpy used order='F', we need to be careful with the alignment
-        # assuming original shape: (num_groups, Mx, Mx)
-        # transpose first then reshape to simulate 'F' (column-major) order
-        eps_gt = self.data['epsilon_gt']  # shape: (num_groups, Mx, Mx)
-        # if eps_gt was originally (num_groups, Mx*Mx), no need to reshape
-        # or we can simulate 'F' order flattening:
-        eps_gt = eps_gt.permute(0, 2, 1)   # swap the second and third dimensions
-        eps_gt = eps_gt.reshape(self.num_groups, -1)  # (num_groups, Mx*Mx)
-        if self.channels == -1:
-            eps_gt = torch.repeat_interleave(eps_gt, repeats=N_inc, dim=0)
-        self.epsilon = eps_gt
-
-        # ---------- 2. decide inputs and ouputs according to config ----------
-
-        # the second dimension represents N_inc inputs of incident waves
-        # adjust axis order        
-        if self.channels != -1:
-            N_inc = 1
-            indices = torch.tensor([self.channels])
-            J_0 = self.J
-            if mode == 'test':
-                E_s_real_imag = E_s_real_imag.permute(0, 2, 1)
-                E_s_real_imag = E_s_real_imag[:, self.channels, :]
-
-                self.J = self.J.permute(0, 2, 1)
-                J_0 = self.J[:, self.channels, :]
-        else:
-            N_inc = self.params['N_inc']
-            indices = torch.arange(N_inc)
-            E_s_real_imag = E_s_real_imag.permute(0, 2, 1)
-            E_s_real_imag = E_s_real_imag.reshape((self.num_groups * N_inc, -1))
-
-            self.J = self.J.permute(0, 2, 1)
-            J_0 = self.J.reshape((self.num_groups * N_inc, -1))
-
-        self.inc_indices = indices.repeat(self.num_groups)
-        self.input_data = E_s_real_imag
-        self.num_groups *= N_inc
-        self.J_separate = torch.cat([J_0.real, J_0.imag], dim=-1)
-        # process input and labels according to config
-        # if (x, y) coordinates are to be taken as input
-        # need to concatenate E_s with (x, y)
-        # and the number of data groups changes from num_groups to num_groups * Mx * Mx
-        if self.baseline == 'Es_xy_to_J' and (not self.image_input):
-            self.num_groups = self.num_groups * self.Mx * self.Mx
-            x_dom = self.data['x_dom']  # shape: (Mx, Mx) 或 (Mx*Mx,)
-            y_dom = self.data['y_dom']
-            self.input_data, self.labels = get_coords_and_pixels(
-                self.input_data, self.J_separate, x_dom, y_dom, self.Mx, self.pos_encoding, self.d
-            )
-        self.transform = transform
-
-    def __len__(self):
-        return self.num_groups
-    
-    def __getitem__(self, idx):
-        """
-        return (input_data, labels)
-        if inputs and labels have been constructed in __init__,
-        here we just need the index.
-        """
-        x = [self.input_data[idx], self.inc_indices[idx]] 
-
-        if self.baseline == 'Es_xy_to_J': 
-            if not self.image_input:
-                y = self.labels[idx]
-            else:
-                y = [self.J_separate[idx], self.epsilon[idx]]
-        else:
-            y = [self.J_separate[idx], self.epsilon[idx]]
-
-        return x, y
-    
-class MoEDataset(Dataset):
-    def __init__(self, root, config, noise_ratio, mode, transform=None):
-        """
-        root: path of the pickle file
-        config: includes these keys:
-                - xy_as_input: bool, whether take (x, y) as the input of the model or not
-                - image_input: bool, whether input the data as image or as points
-                - pos_encoding: bool, whether use positional encoding or not
-                - J_as_label:  bool, whether take J as the output label
-                - epsilon_as_label: bool, whether take epsilon as the output label
-                - dimension: int, the dimension of positional encoding
-        transform: additional transform (not necessarily needed)
-        """
-
-        self.baseline = config['experiment']['baseline']
-        self.image_input = config['experiment']['image_input']
-        self.supervise = config['experiment']['supervise']
-        self.channels = config['experiment']['channels']
-        self.pos_encoding = config['advanced']['pos_encoding']
-        self.d = config['advanced']['dimesions']
-
-        super().__init__()
-        # ---------- 1. load data and transform to tensor ----------
-        with open(root, 'rb') as f:
-            data_dict = pickle.load(f)
-
-        # basic parameters
-        self.params = data_dict['params']  # usually some scalars or hyperparameters, not necessarily need to be converted to Tensor
-        self.data = data_dict['data']      # dictionary storing the actual data
-        self.num_groups = self.params['num_groups'] 
-        self.Mx = self.params['Mx']        # the grid size when generating the data
-
-        # transform numpy arrays in data to torch.Tensor
-        # Note: if the data is already Tensor, no need to transform
-        for k, v in self.data.items():
-            if isinstance(v, (list, tuple)):
-                self.data[k] = torch.tensor(v, dtype=torch.float32)
-            elif isinstance(v, (torch.Tensor,)):
-                # already Tensor, no need to transform
-                continue
-            else:
-                # assume v is numpy.ndarray or other types that can be transformed to Tensor
-                self.data[k] = torch.from_numpy(v).float()
-
-        # get J (complex) from its real and imaginary parts
-        if ('J_real' in self.data and 'J_imag' in self.data):
-            self.J = torch.complex(self.data['J_real'], self.data['J_imag'])
-        else:
-            self.J = torch.zeros((self.num_groups, self.Mx * self.Mx, self.params['N_inc']), dtype=torch.complex64)
-        # the shape of E_s_real and E_s_imag is (num_groups, N_rec, N_inc)
-
-        E_s_real = self.data['E_s_real']
-        E_s_imag = self.data['E_s_imag']
-
-        # add noise to each image
-        N_rec = self.params['N_rec']
-        N_inc = self.params['N_inc']
-        for i in range(self.num_groups):
-            energe = torch.sqrt(torch.mean((E_s_real[i] ** 2 + E_s_imag[i] ** 2))) * (1 / torch.sqrt(torch.tensor([2])))
-            E_s_real[i] = E_s_real[i] + energe * noise_ratio * np.random.randn(*E_s_real[i].shape)
-            E_s_imag[i] = E_s_imag[i] + energe * noise_ratio * np.random.randn(*E_s_imag[i].shape)
-        
-        E_s_real_imag = torch.cat(
-            (E_s_real, E_s_imag), 
-            dim=1  # corresponds to original axis=1
-        )  # shape: (num_groups, 2*N_rec, N_inc)
-
-        # reshape epsilon_gt. Since numpy used order='F', we need to be careful with the alignment
-        # assuming original shape: (num_groups, Mx, Mx)
-        # transpose first then reshape to simulate 'F' (column-major) order
-        eps_gt = self.data['epsilon_gt']  # shape: (num_groups, Mx, Mx)
-        # if eps_gt was originally (num_groups, Mx*Mx), no need to reshape
-        # or we can simulate 'F' order flattening:
-        eps_gt = eps_gt.permute(0, 2, 1)   # swap the second and third dimensions
-        eps_gt = eps_gt.reshape(self.num_groups, -1)  # (num_groups, Mx*Mx)
-        # if self.channels == -1:
-        #     eps_gt = torch.repeat_interleave(eps_gt, repeats=N_inc, dim=0)
-        self.epsilon = eps_gt
-
-        # ---------- 2. decide inputs and ouputs according to config ----------
-
-        # the second dimension represents N_inc inputs of incident waves
-        # [:, :, 0] represents the amplitude of the first incident wave
-        # for MNIST dataset, only the first one can be taken
-        # adjust axis order
-        if mode == 'train':
-            pass
-        elif mode == 'test':
-            self.input_data = E_s_real_imag[:, :, self.channels]
-            self.J_separate = torch.cat([self.J.real, self.J.imag], dim=1)[:, :, self.channels]
-
-    def __len__(self):
-        return self.num_groups
-    
-    def __getitem__(self, idx):
-        """
-        return (input_data, labels)
-        if inputs and labels have been constructed in __init__,
-        here we just need the index.
-        """
-        x = self.input_data[idx]
-        y = [self.J_separate[idx], self.epsilon[idx]]
-
-        return x, y
-
-class ElecDataset_3D(Dataset):
-    def __init__(self, root, config, noise_ratio, mode, transform=None):
-        """
-        root: path of the directory containing .npy files
-        config: includes these keys:
-                - xy_as_input: bool, whether take (x, y) as the input of the model or not
-                - image_input: bool, whether input the data as image or as points
-                - pos_encoding: bool, whether use positional encoding or not
-                - J_as_label:  bool, whether take J as the output label
-                - epsilon_as_label: bool, whether take epsilon as the output label
-                - dimension: int, the dimension of positional encoding
-        noise_ratio: ratio of noise to be added to the data
-        """
-        super().__init__()
-        
-        # initialize the dataset
+class ScatteringDataset(Dataset):
+    def __init__(self, path, conf, noise=0.0, max_samples=None, seed=None,
+                 require_current_labels=True):
+        self.path = Path(path).expanduser().resolve()
+        self.conf = conf
+        self.noise = noise
+        self.seed = conf.seed if seed is None else seed
+        self.dimensions = conf.dimensions
+        self.components = 3 if self.dimensions == 3 else 1
+        self.params = {}
         self.data = {}
-
-        # the root directory should contain the required .npy files
-        required_files = [
-            "E_inc_imag.npy", "E_inc_real.npy", "E_s_imag.npy", "E_s_real.npy",
-            "epsilon_gt.npy", "J_imag.npy", "J_real.npy", "Phi_mat_imag.npy",
-            "Phi_mat_real.npy", "R_mat_imag.npy", "R_mat_real.npy",
-            "x_dom.npy", "y_dom.npy", "z_dom.npy"
-        ]
-
-        # check if the required files exist in the root directory
-        for file_name in required_files:
-            file_path = os.path.join(root, file_name)
-            if os.path.exists(file_path):
-                try:
-                    # load the numpy file and store it in the data dictionary
-                    key = os.path.splitext(file_name)[0]  # remove the .npy extension
-                    self.data[key] = np.load(file_path)
-                except Exception as e:
-                    print(f"Cannot load the file {file_name}: {e}")
+        keys = ["E_s_real", "E_s_imag", "epsilon_gt", "x_dom", "y_dom"]
+        if self.dimensions == 3:
+            keys.append("z_dom")
+        if conf.target == "current":
+            keys += ["J_real", "J_imag", "E_inc_real", "E_inc_imag",
+                     "Phi_mat_real", "Phi_mat_imag"]
+            if conf.physics_weight:
+                keys += ["R_mat_real", "R_mat_imag"]
+        optional = ({"J_real", "J_imag"} if conf.target == "current" and not require_current_labels else set())
+        if self.path.is_dir():
+            for key in keys:
+                file = self.path / (key + ".npy")
+                if not file.is_file():
+                    if key in optional:
+                        continue
+                    raise FileNotFoundError(f"Missing required data array: {file}")
+                self.data[key] = np.load(file, mmap_mode="r", allow_pickle=False)
+        else:
+            if not self.path.is_file():
+                raise FileNotFoundError(f"Data path does not exist: {self.path}")
+            # The project's existing pickle format requires trusted local files.
+            with self.path.open("rb") as handle:
+                payload = pickle.load(handle)
+            self.params = payload.get("params", {})
+            raw = payload["data"]
+            missing = set(keys) - set(raw) - optional
+            if missing:
+                raise ValueError(f"{self.path}: missing fields {sorted(missing)}")
+            self.data = {key: as_numpy(raw[key]) for key in keys if key in raw}
+        real, imag = self.data["E_s_real"], self.data["E_s_imag"]
+        if real.shape != imag.shape or real.ndim not in (2, 3):
+            raise ValueError("E_s real/imag must match and have shape (N,R[,I])")
+        self.object_count, self.receivers = real.shape[:2]
+        self.available_incidences = real.shape[2] if real.ndim == 3 else 1
+        epsilon = self.data["epsilon_gt"]
+        if epsilon.shape[0] != self.object_count:
+            raise ValueError("E_s and epsilon_gt object counts differ")
+        if epsilon.ndim == self.dimensions + 1:
+            self.grid_shape = tuple(epsilon.shape[1:])
+        elif epsilon.ndim == 2:
+            coord_shape = self.data["x_dom"].shape
+            if len(coord_shape) == self.dimensions:
+                self.grid_shape = tuple(coord_shape)
             else:
-                print(f"File not found: {file_path}")
+                size = int(round(epsilon.shape[1] ** (1 / self.dimensions)))
+                self.grid_shape = (size,) * self.dimensions
+        else:
+            raise ValueError("epsilon_gt must be (N,pixels) or (N,*spatial_shape)")
+        self.pixel_count = int(np.prod(self.grid_shape))
+        if int(np.prod(epsilon.shape[1:])) != self.pixel_count:
+            raise ValueError("epsilon_gt size does not match the coordinate grid")
+        coordinate_arrays = [spatial_flatten(self.data[key]) for key in keys
+                             if key in ("x_dom", "y_dom", "z_dom")]
+        if any(len(x) != self.pixel_count for x in coordinate_arrays):
+            raise ValueError("Coordinate grids must contain one entry per pixel/voxel")
+        self.coords = torch.from_numpy(np.stack(coordinate_arrays, axis=-1).astype(np.float32))
+        if conf.channel >= self.available_incidences:
+            # Single-channel training files are already selected; preserve the
+            # physical incidence index for E_inc when params records it.
+            if self.available_incidences != 1:
+                raise ValueError(f"channel={conf.channel}; only {self.available_incidences} incidences available")
+        self.selected = ([conf.channel] if conf.channel >= 0 else list(range(self.available_incidences)))
+        self.incidence_count = (1 if conf.channel >= 0 or conf.multi_input_mode == "separate"
+                                else self.available_incidences)
+        self.feature_count = 2 * self.receivers * self.incidence_count
+        if max_samples is not None and max_samples < 1:
+            raise ValueError("max_samples must be positive")
+        count = min(self.object_count, max_samples) if max_samples else self.object_count
+        self._legacy_noise = None
+        if self.noise and conf.noise_mode == "legacy":
+            rng = np.random.RandomState(self.seed)
+            # Old loaders drew real then imag noise for each object in order.
+            remaining = conf.legacy_noise_offset
+            while remaining:
+                block = min(remaining, 1024)
+                rng.standard_normal((block, 2, self.receivers, self.available_incidences))
+                remaining -= block
+            self._legacy_noise = rng.standard_normal((count, 2, self.receivers, self.available_incidences))
+        self.object_indices = []
+        for index in range(count):
+            values = epsilon[index]
+            if not np.isfinite(values).all():
+                continue
+            if conf.filter_zero_epsilon and np.any(values == 0):
+                continue
+            self.object_indices.append(index)
+        if not self.object_indices:
+            raise ValueError("No valid samples remain after filtering")
+        self.has_current = "J_real" in self.data and "J_imag" in self.data
+        if ("J_real" in self.data) != ("J_imag" in self.data):
+            raise ValueError("J_real and J_imag must either both exist or both be absent")
+        if self.has_current:
+            self._validate_currents()
 
-        # transform numpy arrays in data to torch.Tensor
-        for key, value in self.data.items():
-            self.data[key] = torch.from_numpy(value).float()
-
-        # tranpose and reshape the data
-        self.data['epsilon_gt'] = self.data['epsilon_gt'].permute(0, 3, 2, 1)
-        self.data['epsilon_gt'] = self.data['epsilon_gt'].reshape(self.data['epsilon_gt'].shape[0], -1)
-
-        # merge the real and imaginary parts of E_inc, E_s, J, Phi_mat, and R
-        # channels = config['experiment']['channels']
-        # for ch in channels:
-        #     self.data['E_inc_imag'] = self.data['E_inc_imag'][:, ch, :]
-        #     self.data['E_inc_real'] = self.data['E_inc_real'][:, ch, :]
-        #     self.data['E_s_imag'] = self.data['E_s_imag'][:, :, ch]
-        #     self.data['E_s_real'] = self.data['E_s_real'][:, :, ch]
-        #     self.data['J_imag'] = self.data['J_imag'][:, :, ch, :]
-        #     self.data['J_real'] = self.data['J_real'][:, :, ch, :]
-        self.data['E_s'] = torch.cat([self.data['E_s_real'], self.data['E_s_imag']], dim=-1)
-        # merge the real and imaginary parts of J of 3 dimensions
-        # self.data['J_real'] = self.data['J_real'].flatten(start_dim=1)
-        # self.data['J_imag'] = self.data['J_imag'].flatten(start_dim=1)
-
-        # other initializations
-        self.config = config
-        self.noise_ratio = noise_ratio
-        self.mode = mode
-        self.transform = transform
+    def _validate_currents(self):
+        for key in ("J_real", "J_imag"):
+            arr = self.data[key]
+            if arr.shape[:2] != (self.object_count, self.pixel_count):
+                raise ValueError(f"{key} must start with (objects,pixels)")
+            expected = (self.object_count, self.pixel_count, self.available_incidences, self.components)
+            if self.dimensions == 2 and arr.ndim == 2:
+                shape = (*arr.shape, 1, 1)
+            elif self.dimensions == 2 and arr.ndim == 3:
+                shape = (*arr.shape, 1)
+            elif self.dimensions == 3 and arr.ndim == 3 and self.available_incidences == 1:
+                shape = (arr.shape[0], arr.shape[1], 1, arr.shape[2])
+            else:
+                shape = arr.shape
+            if tuple(shape) != expected:
+                raise ValueError(f"{key}: expected {expected}, got {arr.shape}")
 
     def __len__(self):
-        # return the number of samples in the dataset
-        return self.data["epsilon_gt"].shape[0] if "epsilon_gt" in self.data else 0
+        repeats = self.available_incidences if self.conf.channel == -1 and self.conf.multi_input_mode == "separate" else 1
+        return len(self.object_indices) * repeats
 
-    def __getitem__(self, idx):
-        """
-        returns the input and label for a given index.
-        """
-        E_s = self.data["E_s"][idx]
-        J_real = self.data["J_real"][idx]
-        J_imag = self.data["J_imag"][idx]
-        epsilon_gt = self.data["epsilon_gt"][idx]
-        return E_s, [J_real, J_imag, epsilon_gt]
-        
+    def __getitem__(self, index):
+        separate = self.conf.channel == -1 and self.conf.multi_input_mode == "separate"
+        repeats = self.available_incidences if separate else 1
+        obj = self.object_indices[index // repeats]
+        physical = [index % repeats] if separate else self.selected
+        local = [0] if self.available_incidences == 1 else physical
+        real = np.array(self.data["E_s_real"][obj], dtype=np.float32, copy=True).reshape(self.receivers, -1)
+        imag = np.array(self.data["E_s_imag"][obj], dtype=np.float32, copy=True).reshape(self.receivers, -1)
+        if self.noise:
+            if self._legacy_noise is not None:
+                # Match the old torch energy -> float64 NumPy perturbation ->
+                # float32 assignment, including its operation order.
+                energy = torch.sqrt(torch.mean(torch.from_numpy(real) ** 2 + torch.from_numpy(imag) ** 2))
+                energy = energy * (1 / torch.sqrt(torch.tensor([2])))
+                scale = float((energy * self.noise)[0])
+                real[:] = real.astype(np.float64) + scale * self._legacy_noise[obj, 0]
+                imag[:] = imag.astype(np.float64) + scale * self._legacy_noise[obj, 1]
+            else:
+                rng = np.random.default_rng(self.seed + obj)
+                scale = np.sqrt(np.mean(real ** 2 + imag ** 2) / 2) * self.noise
+                real += scale * rng.standard_normal(real.shape).astype(np.float32)
+                imag += scale * rng.standard_normal(imag.shape).astype(np.float32)
+        real, imag = real[:, local], imag[:, local]
+        if self.dimensions == 2:
+            # incident-major: each incident has all real then all imag receivers.
+            measurements = np.concatenate((real, imag), axis=0).T.reshape(-1)
+        else:
+            # Retain original 3D receiver-major: real incidences, imag incidences.
+            measurements = np.concatenate((real, imag), axis=1).reshape(-1)
+        item = {
+            "measurements": torch.from_numpy(measurements.copy()),
+            "epsilon": torch.from_numpy(spatial_flatten(self.data["epsilon_gt"][obj]).astype(np.float32)),
+            "incidences": torch.tensor(physical, dtype=torch.long),
+            "object_index": torch.tensor(obj, dtype=torch.long),
+        }
+        if self.has_current:
+            parts = [np.asarray(self.data[key][obj]).reshape(self.pixel_count, self.available_incidences,
+                                                           self.components)[:, local, :]
+                     for key in ("J_real", "J_imag")]
+            item["current"] = torch.from_numpy(np.stack(parts, axis=-1).astype(np.float32))
+        return item
+
+    def signature(self):
+        return dict(dimensions=self.dimensions, grid_shape=list(self.grid_shape),
+                    receivers=self.receivers, incidence_count=self.incidence_count,
+                    feature_count=self.feature_count, components=self.components)

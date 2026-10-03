@@ -1,7 +1,6 @@
-torch==2.5.1
-torchaudio==2.5.1
-numpy==1.26.4
-matplotlib==3.9.2
-tqdm==4.67.0
-pytorch_ssim==0.1
-pyyaml==6.0.1
+# Python >= 3.10. Install a CUDA-compatible PyTorch build for your GPU first.
+# Validated remotely with torch 2.8.0+cu128 and numpy 2.3.2 (RTX 5090).
+numpy>=1.26,<3
+torch>=2.5
+PyYAML>=6.0,<7
+# pytorch_ssim is bundled locally; no separate SSIM package is required.
